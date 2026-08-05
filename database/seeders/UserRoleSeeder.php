@@ -16,9 +16,18 @@ class UserRoleSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        // Bersihkan sisa role & user 'customer' dari seed sebelumnya
+        $customerUser = User::where('email', 'customer@example.com')->first();
+        if ($customerUser) {
+            $customerUser->delete();
+        }
 
-        $roles = ['manager', 'keeper', 'customer'];
+        $customerRole = Role::where('name', 'customer')->first();
+        if ($customerRole) {
+            $customerRole->delete();
+        }
+
+        $roles = ['manager', 'keeper'];
 
         $permissions = ['create role', 'edit role', 'delete role', 'view role'];
 
