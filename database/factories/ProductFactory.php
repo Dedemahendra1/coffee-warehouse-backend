@@ -56,7 +56,7 @@ class ProductFactory extends Factory
 
         return [
             'name'        => $name,
-            'thumbnail'   => '/assets/images/products/' . Str::slug($name) . '.jpg',
+            'thumbnail'   => '/assets/images/products/' . Str::slug($name) . '.svg',
             'about'       => fake()->sentence(8),
             'unit'        => fake()->randomElement($units),
             'price'       => fake()->numberBetween(500, 200000),

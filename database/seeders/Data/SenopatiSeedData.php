@@ -32,7 +32,7 @@ class SenopatiSeedData
             'name'  => 'Bayu Prasetyo',
             'email' => 'manager@senopaticoffee.id',
             'phone' => '081234560001',
-            'photo' => '/assets/images/users/manager-1.jpg',
+            'photo' => '/assets/images/users/manager-1.svg',
         ];
     }
 
@@ -43,19 +43,19 @@ class SenopatiSeedData
                 'name'  => 'Rizky Aditya Ramadhan',
                 'email' => 'keeper1@senopaticoffee.id',
                 'phone' => '081234560002',
-                'photo' => '/assets/images/users/keeper-1.jpg',
+                'photo' => '/assets/images/users/keeper-1.svg',
             ],
             [
                 'name'  => 'Salsabila Putri',
                 'email' => 'keeper2@senopaticoffee.id',
                 'phone' => '081234560003',
-                'photo' => '/assets/images/users/keeper-2.jpg',
+                'photo' => '/assets/images/users/keeper-2.svg',
             ],
             [
                 'name'  => 'Fajar Nugroho',
                 'email' => 'keeper3@senopaticoffee.id',
                 'phone' => '081234560004',
-                'photo' => '/assets/images/users/keeper-3.jpg',
+                'photo' => '/assets/images/users/keeper-3.svg',
             ],
         ];
     }
@@ -89,19 +89,19 @@ class SenopatiSeedData
                 'name'    => 'Senopati Coffee Grand Wisata',
                 'address' => 'Jl. Raya Grand Wisata No. 12, Tambun, Bekasi, Jawa Barat',
                 'phone'   => '021-29080001',
-                'photo'   => '/assets/images/merchants/outlet-grand-wisata.jpg',
+                'photo'   => '/assets/images/merchants/outlet-grand-wisata.svg',
             ],
             [
                 'name'    => 'Senopati Coffee Bekasi Selatan',
                 'address' => 'Jl. Ahmad Yani Kav. 21, Bekasi Selatan, Kota Bekasi, Jawa Barat',
                 'phone'   => '021-29080002',
-                'photo'   => '/assets/images/merchants/outlet-bekasi-selatan.jpg',
+                'photo'   => '/assets/images/merchants/outlet-bekasi-selatan.svg',
             ],
             [
                 'name'    => 'Senopati Coffee Galaxy',
                 'address' => 'Jl. Galaxy Raya No. 8, Bekasi Timur, Kota Bekasi, Jawa Barat',
                 'phone'   => '021-29080003',
-                'photo'   => '/assets/images/merchants/outlet-galaxy.jpg',
+                'photo'   => '/assets/images/merchants/outlet-galaxy.svg',
             ],
         ];
     }
@@ -112,7 +112,7 @@ class SenopatiSeedData
             'name'    => 'Gudang Pusat Senopati Coffee',
             'address' => 'Kawasan Industri Pulogadung, Jl. Rawa Sumur Timur II No. 5, Jakarta Timur, DKI Jakarta',
             'phone'   => '021-47000001',
-            'photo'   => '/assets/images/warehouses/gudang-pusat-senopati.jpg',
+            'photo'   => '/assets/images/warehouses/gudang-pusat-senopati.svg',
         ];
     }
 

@@ -27,7 +27,7 @@ class UserFactory extends Factory
             'name' => fake('id_ID')->name(),
             'email' => fake()->unique()->safeEmail(),
             'phone' => '08' . fake()->unique()->numerify('##########'),
-            'photo' => '/assets/images/users/avatar-' . fake()->numberBetween(1, 8) . '.jpg',
+            'photo' => '/assets/images/users/avatar-' . fake()->numberBetween(1, 8) . '.svg',
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password123'),
             'remember_token' => Str::random(10),

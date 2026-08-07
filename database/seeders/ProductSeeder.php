@@ -17,7 +17,7 @@ class ProductSeeder extends Seeder
         foreach (SenopatiSeedData::products() as $product) {
             Product::factory()->create([
                 'name'        => $product['name'],
-                'thumbnail'   => '/assets/images/products/' . Str::slug($product['name']) . '.jpg',
+                'thumbnail'   => '/assets/images/products/' . Str::slug($product['name']) . '.svg',
                 'about'       => $product['about'],
                 'unit'        => $product['unit'],
                 'price'       => $product['price'],
