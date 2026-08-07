@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MerchantProduct extends Model
 {
-    use SoftDeletes;
+    /** @use HasFactory<\Database\Factories\MerchantProductFactory> */
+    use HasFactory, SoftDeletes;
 
     protected $fillable = ['merchant_id', 'product_id', 'stock', 'warehouse_id'];
 

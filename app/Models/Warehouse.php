@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
@@ -9,7 +10,8 @@ use Illuminate\Support\Facades\Storage;
 class Warehouse extends Model
 {
     //
-    use SoftDeletes;
+    /** @use HasFactory<\Database\Factories\WarehouseFactory> */
+    use HasFactory, SoftDeletes;
 
     protected $fillable = ['name', 'address', 'photo', 'phone'];
 
