@@ -69,7 +69,7 @@ Password semua akun: `password123`
 
 | Role     | Email                              | Nama              | Telepon        |
 |----------|------------------------------------|-------------------|----------------|
-| manager  | `manager@senopaticoffee.id`        | Bayu Prasetyo     | `081234560001` |
+| manager   | `manager@senopaticoffee.id`        | Bayu Prasetyo     | `081234560001` |
 | keeper   | `keeper1@senopaticoffee.id`        | Rizky Aditya Ramadhan | `081234560002` |
 | keeper   | `keeper2@senopaticoffee.id`        | Salsabila Putri   | `081234560003` |
 | keeper   | `keeper3@senopaticoffee.id`        | Fajar Nugroho     | `081234560004` |
