@@ -29,7 +29,6 @@ class CategoryFactory extends Factory
             'Lid',
             'Straw',
             'Cleaning Supplies',
-            'Frozen Food',
             'Snack',
             'Sweetener',
         ]);

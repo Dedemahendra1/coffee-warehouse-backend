@@ -76,8 +76,7 @@ class SenopatiSeedData
             ['name' => 'Lid',                'photo' => '/assets/images/categories/lid.svg',                'tagline' => 'Tutup gelas universal'],
             ['name' => 'Straw',              'photo' => '/assets/images/categories/straw.svg',              'tagline' => 'Sedotan ramah lingkungan'],
             ['name' => 'Cleaning Supplies',  'photo' => '/assets/images/categories/cleaning-supplies.svg',  'tagline' => 'Perlengkapan kebersihan outlet'],
-            ['name' => 'Frozen Food',        'photo' => '/assets/images/categories/frozen-food.svg',        'tagline' => 'Bahan makanan beku'],
-            ['name' => 'Snack',              'photo' => '/assets/images/categories/snack.svg',              'tagline' => 'Camilan dan pastry'],
+            ['name' => 'Snack',              'photo' => '/assets/images/categories/snack.svg',              'tagline' => 'Camilan, pastry, dan makanan beku'],
             ['name' => 'Sweetener',          'photo' => '/assets/images/categories/sweetener.svg',          'tagline' => 'Pemanis alami dan gula'],
         ];
     }
@@ -86,22 +85,22 @@ class SenopatiSeedData
     {
         return [
             [
-                'name'    => 'Senopati Coffee Grand Wisata',
-                'address' => 'Jl. Raya Grand Wisata No. 12, Tambun, Bekasi, Jawa Barat',
-                'phone'   => '021-29080001',
-                'photo'   => '/assets/images/merchants/outlet-grand-wisata.svg',
+                'name'    => 'Senopati Coffee Setia Budi',
+                'address' => 'Jl. Setia Budi No. 12, Medan Selayang, Kota Medan, Sumatera Utara',
+                'phone'   => '061-29080001',
+                'photo'   => '/assets/images/merchants/outlet-setia-budi.svg',
             ],
             [
-                'name'    => 'Senopati Coffee Bekasi Selatan',
-                'address' => 'Jl. Ahmad Yani Kav. 21, Bekasi Selatan, Kota Bekasi, Jawa Barat',
-                'phone'   => '021-29080002',
-                'photo'   => '/assets/images/merchants/outlet-bekasi-selatan.svg',
+                'name'    => 'Senopati Coffee Medan Johor',
+                'address' => 'Jl. Medan Johor No. 21, Medan Johor, Kota Medan, Sumatera Utara',
+                'phone'   => '061-29080002',
+                'photo'   => '/assets/images/merchants/outlet-medan-johor.svg',
             ],
             [
-                'name'    => 'Senopati Coffee Galaxy',
-                'address' => 'Jl. Galaxy Raya No. 8, Bekasi Timur, Kota Bekasi, Jawa Barat',
-                'phone'   => '021-29080003',
-                'photo'   => '/assets/images/merchants/outlet-galaxy.svg',
+                'name'    => 'Senopati Coffee Ring Road',
+                'address' => 'Jl. Ring Road No. 8, Medan Sunggal, Kota Medan, Sumatera Utara',
+                'phone'   => '061-29080003',
+                'photo'   => '/assets/images/merchants/outlet-ring-road.svg',
             ],
         ];
     }
@@ -405,7 +404,7 @@ class SenopatiSeedData
             ],
             [
                 'name' => 'Frozen Croissant',
-                'category' => 'Frozen Food',
+                'category' => 'Snack',
                 'unit' => 'pcs',
                 'price' => 15000,
                 'about' => 'Croissant beku siap panggang untuk pastry pendamping kopi.',
@@ -555,5 +554,94 @@ class SenopatiSeedData
             'Anisa Rahma',
             'Yoga Pratama',
         ];
+    }
+
+    /**
+     * Daftar stock out (barang keluar/hilang dari stok outlet).
+     *
+     * Format tiap baris: [indexOutlets, namaProduk, kuantitas, alasan].
+     * Kuantitas stock out diperhitungkan sebagai bagian dari jumlah yang
+     * didistribusikan ke outlet sehingga rantai stok tetap konsisten:
+     * stokAwalOutlet = stokAkhir + jumlahTerjual + jumlahStockOut.
+     */
+    public static function stockOuts(): array
+    {
+        return [
+            // Outlet 0 - Setia Budi
+            [0, 'Arabica Gayo', 2, 'Kemasan bocor'],
+            [0, 'Arabica Toraja', 1, 'Barang rusak'],
+            [0, 'Fresh Milk UHT', 3, 'Stok kadaluarsa'],
+            [0, 'Oat Milk Barista', 2, 'Stok kadaluarsa'],
+            [0, 'Vanilla Syrup', 1, 'Kemasan bocor'],
+            [0, 'Hazelnut Syrup', 2, 'Kemasan bocor'],
+            [0, 'Matcha Powder', 1, 'Kemasan bocor'],
+            [0, 'Chocolate Powder', 2, 'Barang rusak'],
+            [0, 'Green Tea Powder', 1, 'Stok kadaluarsa'],
+            [0, 'Caramel Drizzle', 1, 'Kemasan bocor'],
+            [0, 'Paper Cup 12 oz', 5, 'Barang rusak'],
+            [0, 'Paper Cup 16 oz', 5, 'Barang rusak'],
+            [0, 'Cup Lid', 10, 'Barang rusak'],
+            [0, 'Paper Straw', 20, 'Barang rusak'],
+            [0, 'Frozen Croissant', 3, 'Stok kadaluarsa'],
+            [0, 'Salted Butter Cookies', 2, 'Stok kadaluarsa'],
+            [0, 'Banana Bread Slice', 2, 'Barang rusak'],
+            [0, 'Palm Sugar', 1, 'Kemasan bocor'],
+
+            // Outlet 1 - Medan Johor
+            [1, 'Robusta Lampung', 2, 'Barang rusak'],
+            [1, 'House Blend', 1, 'Kemasan bocor'],
+            [1, 'Ground Arabica Gayo', 1, 'Barang rusak'],
+            [1, 'Fresh Milk UHT', 4, 'Stok kadaluarsa'],
+            [1, 'Oat Milk Barista', 2, 'Stok kadaluarsa'],
+            [1, 'Caramel Syrup', 1, 'Kemasan bocor'],
+            [1, 'Brown Sugar Syrup', 1, 'Kemasan bocor'],
+            [1, 'Matcha Powder', 1, 'Kemasan bocor'],
+            [1, 'Chocolate Powder', 1, 'Barang rusak'],
+            [1, 'Green Tea Leaves', 1, 'Barang rusak'],
+            [1, 'Whipped Cream', 1, 'Stok kadaluarsa'],
+            [1, 'Takeaway Bag', 10, 'Barang rusak'],
+            [1, 'Paper Cup 12 oz', 5, 'Barang rusak'],
+            [1, 'Paper Cup 16 oz', 5, 'Barang rusak'],
+            [1, 'Paper Straw', 10, 'Barang rusak'],
+            [1, 'Frozen Croissant', 2, 'Stok kadaluarsa'],
+            [1, 'Salted Butter Cookies', 2, 'Stok kadaluarsa'],
+            [1, 'Banana Bread Slice', 1, 'Barang rusak'],
+
+            // Outlet 2 - Ring Road
+            [2, 'Arabica Gayo', 1, 'Kemasan bocor'],
+            [2, 'Arabica Toraja', 1, 'Barang rusak'],
+            [2, 'Robusta Lampung', 1, 'Kemasan bocor'],
+            [2, 'Fresh Milk UHT', 3, 'Stok kadaluarsa'],
+            [2, 'Vanilla Syrup', 1, 'Kemasan bocor'],
+            [2, 'Hazelnut Syrup', 1, 'Kemasan bocor'],
+            [2, 'Matcha Powder', 2, 'Kemasan bocor'],
+            [2, 'Chocolate Powder', 1, 'Barang rusak'],
+            [2, 'Green Tea Powder', 1, 'Stok kadaluarsa'],
+            [2, 'Green Tea Leaves', 1, 'Barang rusak'],
+            [2, 'Whipped Cream', 1, 'Stok kadaluarsa'],
+            [2, 'Takeaway Bag', 5, 'Barang rusak'],
+            [2, 'Coffee Filter', 5, 'Barang rusak'],
+            [2, 'Paper Cup 16 oz', 5, 'Barang rusak'],
+            [2, 'Cup Lid', 5, 'Barang rusak'],
+            [2, 'Paper Straw', 10, 'Barang rusak'],
+            [2, 'Salted Butter Cookies', 2, 'Stok kadaluarsa'],
+            [2, 'Banana Bread Slice', 1, 'Barang rusak'],
+        ];
+    }
+
+    /**
+     * Total kuantitas stock out per produk per outlet.
+     *
+     * @return array<string, array<int, int>>  [namaProduk => [indexOutlet => totalKuantitas]]
+     */
+    public static function stockOutTotals(): array
+    {
+        $totals = [];
+
+        foreach (self::stockOuts() as [$outletIndex, $productName, $quantity]) {
+            $totals[$productName][$outletIndex] = ($totals[$productName][$outletIndex] ?? 0) + $quantity;
+        }
+
+        return $totals;
     }
 }

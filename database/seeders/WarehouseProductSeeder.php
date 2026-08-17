@@ -18,9 +18,11 @@ class WarehouseProductSeeder extends Seeder
         foreach (SenopatiSeedData::products() as $productData) {
             // Stok awal gudang = stok akhir target + seluruh kuantitas yang nantinya
             // didistribusikan ke outlet (DistributionSeeder akan menguranginya).
+            // Termasuk kuantitas stock out karena barang tetap keluar dari gudang.
+            $stockOutTotals = SenopatiSeedData::stockOutTotals()[$productData['name']] ?? [];
             $distributed = 0;
-            foreach ($productData['outlets'] as [$finalStock, $sold]) {
-                $distributed += $finalStock + $sold;
+            foreach ($productData['outlets'] as $index => [$finalStock, $sold]) {
+                $distributed += $finalStock + $sold + ($stockOutTotals[$index] ?? 0);
             }
 
             WarehouseProduct::factory()->create([

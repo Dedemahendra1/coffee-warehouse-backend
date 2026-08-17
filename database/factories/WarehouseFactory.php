@@ -17,15 +17,15 @@ class WarehouseFactory extends Factory
     {
         $name = fake()->unique()->randomElement([
             'Gudang Pusat Senopati Coffee',
-            'Gudang Cabang Senopati Jakarta',
-            'Gudang Distribusi Bekasi',
+            'Gudang Cabang Senopati Medan',
+            'Gudang Distribusi Sumatera Utara',
         ]);
 
         return [
             'name'    => $name,
             'address' => fake()->streetAddress() . ', ' . fake()->city(),
             'photo'   => '/assets/images/warehouses/' . Str::slug($name) . '.jpg',
-            'phone'   => fake()->unique()->numerify('(021) 555-####'),
+            'phone'   => fake()->unique()->numerify('(061) 555-####'),
         ];
     }
 }

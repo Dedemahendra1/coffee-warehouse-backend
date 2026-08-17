@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             OutletSeeder::class,
             OutletProductSeeder::class,
             DistributionSeeder::class,
+            StockOutSeeder::class,
             SalesTransactionSeeder::class,
         ]);
     }

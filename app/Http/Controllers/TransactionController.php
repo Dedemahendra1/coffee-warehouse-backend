@@ -7,6 +7,7 @@ use App\Http\Resources\TransactionResource;
 use App\Services\TransactionService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TransactionController extends Controller
 {
@@ -42,6 +43,17 @@ class TransactionController extends Controller
         try {
             $fields = ['*'];
             $transaction = $this->transactionService->getTransactionById($id, $fields);
+
+            $user = Auth::user();
+            if ($user && $user->hasRole('keeper')) {
+                $merchant = $user->merchant;
+                if (!$merchant || $transaction->merchant_id !== $merchant->id) {
+                    return response()->json([
+                        'message' => 'Unauthorized: You can only view your own outlet transactions.',
+                    ], 403);
+                }
+            }
+
             return response()->json(new TransactionResource($transaction));
         } catch (ModelNotFoundException $e) {
             return response()->json([

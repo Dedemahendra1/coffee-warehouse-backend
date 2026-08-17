@@ -6,6 +6,7 @@ use App\Http\Controllers\MerchantController;
 use App\Http\Controllers\MerchantProductController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\StockOutController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserRoleController;
@@ -23,7 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user', [AuthController::class, 'user']);
 });
 
-
+// MANAGER: Master data, administrasi pengguna & monitoring
 Route::middleware(['auth:sanctum', 'role:manager'])->group(function () {
 
     Route::apiResource('users', UserController::class);
@@ -37,19 +38,35 @@ Route::middleware(['auth:sanctum', 'role:manager'])->group(function () {
     Route::apiResource('warehouses', WarehouseController::class);
     Route::apiResource('merchants', MerchantController::class);
 
-    Route::post('warehouses/{warehouse}/products', [WarehouseProductController::class, 'attach']);
+    // Admin: menghapus/mengeluarkan produk dari gudang
     Route::delete('warehouses/{warehouse}/products/{product}', [WarehouseProductController::class, 'detach']);
+
+    // Monitoring: seluruh transaksi & stock out
+    Route::get('transactions', [TransactionController::class, 'index']);
+
+});
+
+// KEEPER: Operasional stok gudang, distribusi ke outlet sendiri, transaksi & stock out outlet sendiri
+Route::middleware(['auth:sanctum', 'role:keeper'])->group(function () {
+
+    // Kelola stok gudang (menambah/mengurangi)
+    Route::post('warehouses/{warehouse}/products', [WarehouseProductController::class, 'attach']);
     Route::put('warehouses/{warehouse}/products/{product}', [WarehouseProductController::class, 'update']);
 
+    // Distribusi stok ke outlet (kepemilikan divalidasi di controller)
     Route::post('merchants/{merchant}/products', [MerchantProductController::class, 'store']);
     Route::put('merchants/{merchant}/products/{product}', [MerchantProductController::class, 'update']);
     Route::delete('merchants/{merchant}/products/{product}', [MerchantProductController::class, 'destroy']);
 
-    Route::apiResource('transactions', TransactionController::class);
+    // Transaksi penjualan outlet sendiri
+    Route::post('transactions', [TransactionController::class, 'store']);
+
+    // Stock out outlet sendiri
+    Route::post('stock-outs', [StockOutController::class, 'store']);
 
 });
 
-
+// MANAGER & KEEPER: Data yang boleh dilihat bersama (scoping per role di controller)
 Route::middleware(['auth:sanctum', 'role:manager|keeper'])->group(function () {
 
     Route::get('categories', [CategoryController::class, 'index']);
@@ -61,26 +78,15 @@ Route::middleware(['auth:sanctum', 'role:manager|keeper'])->group(function () {
     Route::get('warehouses', [WarehouseController::class, 'index']);
     Route::get('warehouses/{warehouse}', [WarehouseController::class, 'show']);
 
-    Route::post('transactions', [TransactionController::class, 'store']);
+    // Lihat produk & stok gudang
+    Route::get('warehouses/{warehouse}/products', [WarehouseProductController::class, 'show']);
+
     Route::get('transactions/{transaction}', [TransactionController::class, 'show']);
 
     Route::get('my-merchant', [MerchantController::class, 'getMyMerchantProfile']);
     Route::get('/my-merchant/transactions', [TransactionController::class, 'getTransactionsByMerchant']);
 
-    // Distribusi Stok (keeper manages their own outlet)
-    Route::post('merchants/{merchant}/products', [MerchantProductController::class, 'store']);
-    Route::put('merchants/{merchant}/products/{product}', [MerchantProductController::class, 'update']);
-    Route::delete('merchants/{merchant}/products/{product}', [MerchantProductController::class, 'destroy']);
-
-    // Warehouse Products (keeper can view and distribute)
-    Route::get('warehouses/{warehouse}/products', [WarehouseProductController::class, 'show']);
-    Route::post('warehouses/{warehouse}/products', [WarehouseProductController::class, 'attach']);
-    Route::put('warehouses/{warehouse}/products/{product}', [WarehouseProductController::class, 'update']);
+    // Stock out: manager melihat semua, keeper hanya outlet sendiri (di-scope di controller)
+    Route::get('stock-outs', [StockOutController::class, 'index']);
 
 });
-
-
-
-
-
-

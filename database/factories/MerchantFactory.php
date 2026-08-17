@@ -17,17 +17,16 @@ class MerchantFactory extends Factory
     public function definition(): array
     {
         $name = fake()->unique()->randomElement([
-            'Senopati Coffee Grand Wisata',
-            'Senopati Coffee Bekasi Selatan',
-            'Senopati Coffee Galaxy',
-            'Senopati Coffee Kelapa Gading',
+            'Senopati Coffee Setia Budi',
+            'Senopati Coffee Medan Johor',
+            'Senopati Coffee Ring Road',
         ]);
 
         return [
             'name'      => $name,
             'address'   => fake()->streetAddress() . ', ' . fake()->city(),
             'photo'     => '/assets/images/merchants/' . Str::slug($name) . '.jpg',
-            'phone'     => fake()->unique()->numerify('(021) 666-####'),
+            'phone'     => fake()->unique()->numerify('(061) 666-####'),
             'keeper_id' => User::factory(),
         ];
     }

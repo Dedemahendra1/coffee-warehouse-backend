@@ -45,23 +45,24 @@ dahulu (mis. `CREATE DATABASE gudang-backend CHARACTER SET utf8mb4 COLLATE utf8m
 
 ## 2. Data Demo (Seeder)
 
-`php artisan migrate:fresh --seed` menjalankan **10 seeder** secara berurutan:
+`php artisan migrate:fresh --seed` menjalankan **11 seeder** secara berurutan:
 
 | No | Seeder                  | Isi                                                          |
 |----|-------------------------|--------------------------------------------------------------|
 | 1  | `RoleSeeder`            | Role `manager` & `keeper` + 4 permission CRUD                |
 | 2  | `UserSeeder`            | 1 manajer + 3 penjaga gudang                                 |
-| 3  | `CategorySeeder`        | 16 kategori produk                                           |
+| 3  | `CategorySeeder`        | 15 kategori produk                                           |
 | 4  | `ProductSeeder`         | 33 produk (nama, satuan, harga, kategori, foto)              |
 | 5  | `WarehouseSeeder`       | 1 gudang pusat                                               |
 | 6  | `WarehouseProductSeeder`| Stok awal gudang (termasuk stok yang akan didistribusikan)   |
-| 7  | `OutletSeeder`          | 3 outlet dengan `keeper_id`                                 |
-| 8  | `OutletProductSeeder`   | 81 baris distribusi (stok akhir outlet + qty terjual)        |
+| 7  | `OutletSeeder`          | 3 outlet Medan dengan `keeper_id`                            |
+| 8  | `OutletProductSeeder`   | 81 baris distribusi (stok akhir outlet + qty terjual + stock out) |
 | 9  | `DistributionSeeder`    | Mengurangi stok gudang sesuai total distribusi               |
-| 10 | `SalesTransactionSeeder`| 150 transaksi (50 per outlet, 583 baris) + pengurangan stok outlet |
+| 10 | `StockOutSeeder`        | 54 record stock out + pengurangan stok outlet                |
+| 11 | `SalesTransactionSeeder`| 150 transaksi (50 per outlet) + pengurangan stok outlet      |
 
-Master data realistis (nama produk, harga, target stok, jumlah terjual, nama
-pelanggan) terpusat di `database/seeders/Data/SenopatiSeedData.php`.
+Master data realistis (nama produk, harga, target stok, jumlah terjual, stock out,
+nama pelanggan) terpusat di `database/seeders/Data/SenopatiSeedData.php`.
 
 ### Akun demo
 
@@ -77,8 +78,8 @@ Password semua akun: `password123`
 ### Jaminan konsistensi seeder
 
 - Setiap transaksi menghitung `sub_total`, `tax_total` (10%), `grand_total` secara konsisten.
-- Stok outlet berkurang sesuai kuantitas terjual; stok gudang berkurang sesuai
-  total distribusi; **tidak ada stok negatif**.
+- Stok outlet berkurang sesuai kuantitas terjual + stock out; stok gudang berkurang
+  sesuai total distribusi; **tidak ada stok negatif**.
 - `SalesTransactionSeeder` mengakhiri proses dengan *assert*: stok gudang/outlet
   harus sama dengan target di `SenopatiSeedData`, dan jumlah transaksi ≥ 150.
   Jika gagal, seeder melempar `RuntimeException` dan proses berhenti.
@@ -86,7 +87,66 @@ Password semua akun: `password123`
   dapat diuji: Matcha, Hazelnut Syrup, Green Tea Powder, Frozen Croissant,
   White Chocolate Powder, Sanitizer Solution, dsb.
 
-## 3. Deployment Produksi
+## 3. Role & Hak Akses
+
+Otorisasi per role diterapkan di `routes/api.php` (middleware `role:...`) dan
+diperkuat di `app/Services`/`app/Http/Controllers` untuk pemisahan data (scoping).
+
+### Matriks endpoint
+
+| Endpoint                                              | Manager | Keeper |
+|-------------------------------------------------------|:-------:|:------:|
+| CRUD master data (kategori, produk, gudang, outlet)   | ✔       | ✖      |
+| `DELETE warehouses/{warehouse}/products/{product}`    | ✔       | ✖      |
+| `GET transactions` (monitoring semua outlet)          | ✔       | ✖      |
+| `POST transactions` (penjualan outlet sendiri)        | ✖       | ✔      |
+| `POST/PUT merchants/{merchant}/products*` (outlet sendiri) | ✖ | ✔ |
+| `POST/PUT warehouses/{warehouse}/products*` (stok)    | ✖       | ✔      |
+| `POST stock-outs` (outlet sendiri)                    | ✖       | ✔      |
+| `GET stock-outs` / `GET transactions/{id}` / `GET my-merchant*` | ✔ (semua) | ✔ (hanya miliknya) |
+| `GET categories/products/warehouses*` (view)          | ✔       | ✔      |
+
+Catatan scoping:
+- Keeper hanya dapat mengubah stok/produk outlet miliknya sendiri
+  (`authorizeKeeper` di `MerchantProductController`).
+- Keeper hanya dapat melihat `GET transactions/{id}` bila transaksi tersebut
+  milik merchant-nya (selain itu → 403).
+- `StockOutService` memvalidasi kepemilikan outlet dan mencegah stok negatif
+  dalam satu transaksi database.
+
+### Endpoint baru — Stock Out
+
+| Method | Endpoint           | Deskripsi                                           |
+|--------|--------------------|-----------------------------------------------------|
+| GET    | `api/stock-outs`   | Manager: semua outlet; Keeper: hanya outlet sendiri |
+| POST   | `api/stock-outs`   | Catat pengeluaran stok & kurangi stok outlet (keeper) |
+
+Contoh payload `POST api/stock-outs`:
+```json
+{
+  "merchant_id": 1,
+  "product_id": 12,
+  "quantity": 3,
+  "reason": "Kemasan rusak / kadaluarsa / gratis"
+}
+```
+
+## 4. Pengujian
+
+```bash
+# Seluruh test suite (unit + fitur + otorisasi role)
+php artisan test
+```
+
+Test otorisasi (14 kasus) ada di `tests/Feature/RoleAccessTest.php`. Test memakai
+database terpisah `gudang-backend-test` (lihat `phpunit.xml`) sehingga data
+development di `gudang-backend` tidak terganggu. Sebelum menjalankan test, buat
+database test terlebih dahulu:
+```sql
+CREATE DATABASE gudang-backend-test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+## 5. Deployment Produksi
 
 ```bash
 # 1. Salin proyek ke server, pasang dependensi tanpa dev
@@ -119,7 +179,7 @@ php artisan event:cache
 > Bila data produksi sudah terisi, jangan jalankan seeder ulang karena akan
 > membuat data ganda (kecuali `fresh`, yang menghapus seluruh data).
 
-## 4. Konfigurasi Web Server
+## 6. Konfigurasi Web Server
 
 ### Nginx
 
@@ -175,7 +235,7 @@ server {
 </VirtualHost>
 ```
 
-## 5. Scheduler & Queue
+## 7. Scheduler & Queue
 
 - Jalankan scheduler setiap menit di cron:
   ```
@@ -186,7 +246,7 @@ server {
   php artisan queue:work
   ```
 
-## 6. Pemecahan Masalah
+## 8. Pemecahan Masalah
 
 | Gejala                              | Solusi                                                              |
 |-------------------------------------|---------------------------------------------------------------------|

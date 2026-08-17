@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\WarehouseProductUpdateRequest;
+use App\Http\Resources\WarehouseResource;
 use App\Services\WarehouseService;
 use Illuminate\Http\Request;
 
@@ -15,6 +16,13 @@ class WarehouseProductController extends Controller
     public function __construct(WarehouseService $warehouseService)
     {
         $this->warehouseService = $warehouseService;
+    }
+
+    public function show(int $warehouseId)
+    {
+        $fields = ['*'];
+        $warehouse = $this->warehouseService->getById($warehouseId, $fields);
+        return response()->json(new WarehouseResource($warehouse));
     }
 
     public function attach(Request $request, int $warehouseId)
