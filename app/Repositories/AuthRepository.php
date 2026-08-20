@@ -34,13 +34,13 @@ class AuthRepository
             ], 401);
         }
 
-        request()->session()->regenerate();
-
         $user = Auth::user();
+        $token = $user->createToken('API Token')->plainTextToken;
 
         return response()->json([
             'message' => 'Login successful',
-            'user' => new UserResource($user->load('roles')),
+            'token'   => $token,
+            'user'    => new UserResource($user->load('roles')),
         ]);
     }
 
