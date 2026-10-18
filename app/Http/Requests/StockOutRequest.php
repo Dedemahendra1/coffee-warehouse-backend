@@ -21,8 +21,13 @@ class StockOutRequest extends FormRequest
      */
     public function rules(): array
     {
+        // Kasir selalu dipaksa ke outlet miliknya, jadi merchant_id tidak wajib
+        // dikirim dari klien. Keeper tetap wajib mengirim merchant_id.
+        $isKasirOnly = optional($this->user())->hasRole('kasir')
+            && !optional($this->user())->hasRole('keeper');
+
         return [
-            'merchant_id' => 'required|exists:merchants,id',
+            'merchant_id' => ($isKasirOnly ? 'nullable' : 'required') . '|exists:merchants,id',
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
             'reason' => 'nullable|string|max:255',

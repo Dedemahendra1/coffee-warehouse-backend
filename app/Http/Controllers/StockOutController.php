@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StockOutRequest;
 use App\Http\Resources\StockOutResource;
 use App\Services\StockOutService;
+use App\Support\OutletAccess;
 use Illuminate\Support\Facades\Auth;
 
 class StockOutController extends Controller
@@ -20,12 +21,15 @@ class StockOutController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->hasRole('keeper')) {
-            if (!$user->merchant) {
+        // keeper & kasir hanya melihat outlet miliknya; manager melihat semua
+        if ($user->hasRole('keeper') || $user->hasRole('kasir')) {
+            $merchantId = OutletAccess::accessibleMerchantId($user);
+
+            if (!$merchantId) {
                 return response()->json(['message' => 'No merchant assigned'], 403);
             }
 
-            $stockOuts = $this->stockOutService->getByMerchant($user->merchant->id);
+            $stockOuts = $this->stockOutService->getByMerchant($merchantId);
             return response()->json(StockOutResource::collection($stockOuts));
         }
 
@@ -35,7 +39,28 @@ class StockOutController extends Controller
 
     public function store(StockOutRequest $request)
     {
-        $stockOut = $this->stockOutService->createStockOut($request->validated());
+        $data = $request->validated();
+        $user = Auth::user();
+
+        // Kasir tidak boleh menulis ke outlet lain: merchant_id dipaksa ke
+        // outlet miliknya (users.merchant_id).
+        if ($user->hasRole('kasir') && !$user->hasRole('keeper')) {
+            $ownMerchantId = OutletAccess::accessibleMerchantId($user);
+
+            if (!$ownMerchantId) {
+                return response()->json(['message' => 'No merchant assigned'], 403);
+            }
+
+            if (isset($data['merchant_id']) && (int) $data['merchant_id'] !== $ownMerchantId) {
+                return response()->json([
+                    'message' => 'Unauthorized: You can only manage your own outlet.',
+                ], 403);
+            }
+
+            $data['merchant_id'] = $ownMerchantId;
+        }
+
+        $stockOut = $this->stockOutService->createStockOut($data);
 
         return response()->json([
             'message' => 'Stock out recorded successfully',

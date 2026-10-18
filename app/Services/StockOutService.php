@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Repositories\MerchantProductRepository;
 use App\Repositories\MerchantRepository;
 use App\Repositories\StockOutRepository;
+use App\Support\OutletAccess;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -47,7 +48,7 @@ class StockOutService
                 ]);
             }
 
-            if (Auth::id() !== $merchant->keeper_id) {
+            if (!OutletAccess::canManageMerchant(Auth::user(), $merchant->id)) {
                 throw ValidationException::withMessages([
                     'authorization' => ['Unauthorized: You can only manage your own outlet.']
                 ]);

@@ -61,7 +61,11 @@ Route::middleware(['auth:sanctum', 'role:keeper'])->group(function () {
     // Transaksi penjualan outlet sendiri
     Route::post('transactions', [TransactionController::class, 'store']);
 
-    // Stock out outlet sendiri
+});
+
+// KEEPER & KASIR: membuat stock out di outlet sendiri
+Route::middleware(['auth:sanctum', 'role:keeper|kasir'])->group(function () {
+
     Route::post('stock-outs', [StockOutController::class, 'store']);
 
 });
@@ -83,10 +87,16 @@ Route::middleware(['auth:sanctum', 'role:manager|keeper'])->group(function () {
 
     Route::get('transactions/{transaction}', [TransactionController::class, 'show']);
 
-    Route::get('my-merchant', [MerchantController::class, 'getMyMerchantProfile']);
     Route::get('/my-merchant/transactions', [TransactionController::class, 'getTransactionsByMerchant']);
 
-    // Stock out: manager melihat semua, keeper hanya outlet sendiri (di-scope di controller)
+});
+
+// MANAGER, KEEPER & KASIR: data outlet sendiri & stock out (scoping per role di controller)
+Route::middleware(['auth:sanctum', 'role:manager|keeper|kasir'])->group(function () {
+
+    Route::get('my-merchant', [MerchantController::class, 'getMyMerchantProfile']);
+
+    // Stock out: manager melihat semua, keeper/kasir hanya outlet sendiri (di-scope di controller)
     Route::get('stock-outs', [StockOutController::class, 'index']);
 
 });

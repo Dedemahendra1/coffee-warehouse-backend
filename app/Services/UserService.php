@@ -28,17 +28,29 @@ class UserService
 
     public function create(array $data)
     {
+        $role = $data['role'] ?? null;
+        unset($data['role']);
+
         $data['password'] = bcrypt($data['password']); // 123password -> 1230912!@#!212uqkwqje1k2j32 -> 123password
 
         if (isset($data['photo']) && $data['photo'] instanceof UploadedFile) {
             $data['photo'] = $this->uploadPhoto($data['photo']);
         }
 
-        return $this->userRepository->create($data);
+        $user = $this->userRepository->create($data);
+
+        if ($role) {
+            $user->assignRole($role);
+        }
+
+        return $user;
     }
 
     public function update(int $id, array $data)
     {
+        $role = $data['role'] ?? null;
+        unset($data['role']);
+
         $fields = ['*'];
         $user = $this->userRepository->getById($id, $fields);
 
@@ -49,7 +61,13 @@ class UserService
             $data['photo'] = $this->uploadPhoto($data['photo']);
         }
 
-        return $this->userRepository->update($id, $data);
+        $user = $this->userRepository->update($id, $data);
+
+        if ($role) {
+            $user->syncRoles([$role]);
+        }
+
+        return $user;
     }
 
     public function delete(int $id)

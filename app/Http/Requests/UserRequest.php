@@ -27,6 +27,8 @@ class UserRequest extends FormRequest
             'password' => $this->isMethod('post') ? 'required|string|min:8' : 'nullable|string|min:8',
             'photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'phone' => 'required|string|max:15',
+            'role' => 'nullable|string|exists:roles,name',
+            'merchant_id' => 'nullable|integer|exists:merchants,id|required_if:role,kasir',
         ];
     }
 }

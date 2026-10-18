@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             WarehouseSeeder::class,
             WarehouseProductSeeder::class,
             OutletSeeder::class,
+            KasirSeeder::class,
             OutletProductSeeder::class,
             DistributionSeeder::class,
             StockOutSeeder::class,

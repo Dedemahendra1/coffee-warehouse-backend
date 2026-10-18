@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\MerchantRequest;
 use App\Http\Resources\MerchantResource;
 use App\Services\MerchantService;
+use App\Support\OutletAccess;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -74,10 +75,18 @@ class MerchantController extends Controller
 
     public function getMyMerchantProfile()
     {
-        $userId = Auth::id();
+        $user = Auth::user();
+
+        $merchantId = OutletAccess::accessibleMerchantId($user);
+
+        if ($merchantId === null) {
+            return response()->json([
+                'message' => 'Merchant not found for this user.',
+            ], 404);
+        }
 
         try {
-            $merchant = $this->merchantService->getByKeeperId($userId);
+            $merchant = $this->merchantService->getById($merchantId, ['*']);
 
             return response()->json(new MerchantResource($merchant));
         } catch (ModelNotFoundException $e) {

@@ -26,6 +26,7 @@ class User extends Authenticatable
         'password',
         'phone',
         'photo',
+        'merchant_id',
     ];
 
     /**
@@ -63,5 +64,10 @@ class User extends Authenticatable
     public function merchant()
     {
         return $this->hasOne(Merchant::class, 'keeper_id', 'id');
+    }
+
+    public function assignedMerchant()
+    {
+        return $this->belongsTo(Merchant::class, 'merchant_id');
     }
 }

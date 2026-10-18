@@ -23,7 +23,9 @@ class UserResource extends JsonResource
             'phone' => $this->phone,
             'photo' => $this->photo,
             'roles' => $this->roles->pluck('name'),
-            'merchant' => $this->merchant ? new MerchantResource($this->merchant) : null
+            'merchant_id' => $this->merchant_id,
+            'merchant' => $this->merchant ? new MerchantResource($this->merchant) : null,
+            'assigned_merchant' => $this->assignedMerchant ? new MerchantResource($this->assignedMerchant) : null,
         ];
     }
 }

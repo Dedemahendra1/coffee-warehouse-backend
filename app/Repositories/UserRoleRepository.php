@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\User;
+use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Role;
 
 class UserRoleRepository
@@ -12,6 +13,12 @@ class UserRoleRepository
     {
         $user = User::findOrFail($userId);
         $role = Role::findOrFail($roleId);
+
+        if ($role->name === 'kasir' && empty($user->merchant_id)) {
+            throw ValidationException::withMessages([
+                'merchant_id' => ['User ini belum memiliki outlet. Tetapkan outlet pada data user sebelum memberikan role kasir.'],
+            ]);
+        }
 
         $user->assignRole($role->name);
 

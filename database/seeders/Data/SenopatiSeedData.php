@@ -18,7 +18,7 @@ class SenopatiSeedData
 {
     public static function roles(): array
     {
-        return ['manager', 'keeper'];
+        return ['manager', 'keeper', 'kasir'];
     }
 
     public static function permissions(): array
@@ -56,6 +56,23 @@ class SenopatiSeedData
                 'email' => 'keeper3@senopaticoffee.id',
                 'phone' => '081234560004',
                 'photo' => '/assets/images/users/keeper-3.svg',
+            ],
+        ];
+    }
+
+    /**
+     * Kasir terhubung ke satu outlet. Outlet dipilih berdasarkan urutan
+     * outlets() (index 0 = outlet pertama).
+     */
+    public static function kasirUsers(): array
+    {
+        return [
+            [
+                'name'        => 'Dewi Lestari',
+                'email'       => 'kasir1@senopaticoffee.id',
+                'phone'       => '081234560005',
+                'photo'       => '/assets/images/users/kasir-1.svg',
+                'outletIndex' => 0,
             ],
         ];
     }
