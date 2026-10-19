@@ -67,9 +67,15 @@ class WarehouseService
     {
         $warehouse = $this->warehouseRepository->getById($warehouseId, ['id']);
 
-        $warehouse->products()->syncWithoutDetaching([
-            $productId => ['stock' => $stock],
-        ]);
+        $existing = $warehouse->products()->where('product_id', $productId)->first();
+
+        if ($existing) {
+            $warehouse->products()->updateExistingPivot($productId, [
+                'stock' => $existing->pivot->stock + $stock,
+            ]);
+        } else {
+            $warehouse->products()->attach($productId, ['stock' => $stock]);
+        }
     }
 
     public function detachProduct(int $warehouseId, int $productId)
