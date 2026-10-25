@@ -46,6 +46,16 @@ class Product extends Model
         return $this->hasMany(TransactionProduct::class);
     }
 
+    public function recipe()
+    {
+        return $this->hasOne(Recipe::class);
+    }
+
+    public function recipeItems()
+    {
+        return $this->hasMany(RecipeItem::class, 'ingredient_id');
+    }
+
     public function getWarehouseProductStock()
     {
         return $this->warehouses()->sum('stock');

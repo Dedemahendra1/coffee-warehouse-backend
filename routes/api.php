@@ -5,6 +5,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\MerchantController;
 use App\Http\Controllers\MerchantProductController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\RecipeController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StockOutController;
 use App\Http\Controllers\TransactionController;
@@ -34,6 +35,9 @@ Route::middleware(['auth:sanctum', 'role:manager'])->group(function () {
 
     Route::apiResource('categories', CategoryController::class);
     Route::apiResource('products', ProductController::class);
+
+    Route::apiResource('recipes', RecipeController::class);
+    Route::post('recipes/{recipe}/calculate', [RecipeController::class, 'calculate']);
 
     Route::apiResource('warehouses', WarehouseController::class);
     Route::apiResource('merchants', MerchantController::class);

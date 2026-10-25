@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             DistributionSeeder::class,
             StockOutSeeder::class,
             SalesTransactionSeeder::class,
+            RecipeSeeder::class,
         ]);
     }
 }
