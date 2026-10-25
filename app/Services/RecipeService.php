@@ -26,6 +26,23 @@ class RecipeService
         return $this->recipeRepository->getById($id);
     }
 
+    public function getMenus(): array
+    {
+        return $this->recipeRepository->getMenus()
+            ->map(fn (Recipe $recipe) => [
+                'recipe_id' => $recipe->id,
+                'product_id' => $recipe->product_id,
+                'name' => $recipe->product->name,
+                'thumbnail' => $recipe->product->thumbnail,
+                'price' => $recipe->product->price,
+                'unit' => $recipe->product->unit,
+                'category' => $recipe->product->category?->name,
+                'ingredient_count' => $recipe->items->count(),
+            ])
+            ->values()
+            ->all();
+    }
+
     public function create(array $data): Recipe
     {
         return DB::transaction(function () use ($data) {

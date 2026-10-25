@@ -24,6 +24,22 @@ class RecipeRepository
         ])->findOrFail($id);
     }
 
+    public function getMenus()
+    {
+        return Recipe::with(['product.category', 'items.ingredient'])
+            ->whereHas('product')
+            ->latest()
+            ->get();
+    }
+
+    public function getByProductIds(array $productIds)
+    {
+        return Recipe::with(['items.ingredient'])
+            ->whereIn('product_id', $productIds)
+            ->get()
+            ->keyBy('product_id');
+    }
+
     public function create(array $data): Recipe
     {
         return Recipe::create($data);

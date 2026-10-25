@@ -6,30 +6,32 @@ use App\Repositories\TransactionRepository;
 use App\Repositories\MerchantProductRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\MerchantRepository;
+use App\Support\OutletAccess;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class TransactionService
 {
-
     private TransactionRepository $transactionRepository;
     private MerchantProductRepository $merchantProductRepository;
     private ProductRepository $productRepository;
     private MerchantRepository $merchantRepository;
+    private RecipeStockService $recipeStockService;
 
-    public function __construct
-    (
+    public function __construct(
         TransactionRepository $transactionRepository,
         MerchantProductRepository $merchantProductRepository,
         ProductRepository $productRepository,
-        MerchantRepository $merchantRepository
-    )
-    {
+        MerchantRepository $merchantRepository,
+        RecipeStockService $recipeStockService
+    ) {
         $this->transactionRepository = $transactionRepository;
         $this->merchantProductRepository = $merchantProductRepository;
         $this->productRepository = $productRepository;
         $this->merchantRepository = $merchantRepository;
+        $this->recipeStockService = $recipeStockService;
     }
 
     public function getAll(array $fields)
@@ -39,7 +41,6 @@ class TransactionService
 
     public function getTransactionById(int $id, array $fields)
     {
-
         $transaction = $this->transactionRepository->getById($id, $fields ?? ['*']);
 
         if (!$transaction) {
@@ -58,91 +59,136 @@ class TransactionService
 
     public function createTransaction(array $data)
     {
+        $idempotencyKey = $data['idempotency_key'] ?? null;
 
-        return DB::transaction(function () use ($data) {
+        if ($idempotencyKey) {
+            $existing = $this->transactionRepository->findByIdempotencyKey($idempotencyKey);
 
-            $merchant = $this->merchantRepository->getById($data['merchant_id'], ['id', 'keeper_id']);
-
-            if (!$merchant) {
-                throw ValidationException::withMessages([
-                    'merchant_id' => ['Merchant not found.']
-                ]);
+            if ($existing) {
+                return $existing;
             }
+        }
 
-            if (Auth::id() !== $merchant->keeper_id) {
-                throw ValidationException::withMessages([
-                    'authorization' => ['Unauthorized: You can only process transactions for your assigned merchant.']
-                ]);
-            }
-
-            $products = [
-                // product1, product2 dst...
-            ];
-
-            $subTotal = 0;
-
-            foreach ($data['products'] as $productData) {
-
-                $merchantProduct = $this->merchantProductRepository->getByMerchantAndProduct(
+        try {
+            return DB::transaction(function () use ($data, $idempotencyKey) {
+                $merchant = $this->merchantRepository->getById(
                     $data['merchant_id'],
-                    $productData['product_id']
+                    ['id', 'keeper_id']
                 );
 
-                if (!$merchantProduct || $merchantProduct->stock < $productData['quantity']) {
+                if (!$merchant) {
                     throw ValidationException::withMessages([
-                        'stock' => ["Insufficient stock for product ID: " . $productData['product_id']]
+                        'merchant_id' => ['Merchant not found.']
                     ]);
                 }
 
-                $product = $this->productRepository->getById($productData['product_id'], ['price']);
-
-                if (!$product) {
+                if (!OutletAccess::canManageMerchant(Auth::user(), $merchant->id)) {
                     throw ValidationException::withMessages([
-                        'product_id' => ["Product ID {$productData['product_id']} not found."]
+                        'authorization' => ['Unauthorized: You can only process transactions for your assigned merchant.']
                     ]);
                 }
 
-                $price = $product->price;
-                $productSubTotal = $productData['quantity'] * $price;
-                $subTotal += $productSubTotal;
-                // 0 ... + 129000 + 228000 +  ....
+                $requestedProducts = $data['products'];
+                $productIds = array_values(array_unique(array_column($requestedProducts, 'product_id')));
+                $recipeProductIds = $this->recipeStockService->recipeProductIds($productIds);
 
-                $products[] = [
-                    'product_id' => $productData['product_id'],
-                    'quantity' => $productData['quantity'],
-                    'price' => $price,
-                    'sub_total' => $productSubTotal,
-                ];
+                $products = [];
+                $subTotal = 0;
+                $merchantQuantities = [];
+                $merchantProducts = [];
 
-                $newStock = max(0, $merchantProduct->stock - $productData['quantity']);
+                foreach ($requestedProducts as $productData) {
+                    $product = $this->productRepository->getById($productData['product_id'], ['price']);
 
-                $this->merchantProductRepository->updateStock(
+                    if (!$product) {
+                        throw ValidationException::withMessages([
+                            'product_id' => ["Product ID {$productData['product_id']} not found."]
+                        ]);
+                    }
+
+                    $price = $product->price;
+                    $productSubTotal = $productData['quantity'] * $price;
+                    $subTotal += $productSubTotal;
+
+                    $products[] = [
+                        'product_id' => $productData['product_id'],
+                        'quantity' => $productData['quantity'],
+                        'price' => $price,
+                        'sub_total' => $productSubTotal,
+                    ];
+
+                    if (in_array((int) $productData['product_id'], $recipeProductIds, true)) {
+                        continue;
+                    }
+
+                    $merchantQuantities[$productData['product_id']] =
+                        ($merchantQuantities[$productData['product_id']] ?? 0)
+                        + $productData['quantity'];
+
+                    if (!isset($merchantProducts[$productData['product_id']])) {
+                        $merchantProducts[$productData['product_id']] =
+                            $this->merchantProductRepository->getByMerchantAndProduct(
+                                $data['merchant_id'],
+                                $productData['product_id']
+                            );
+                    }
+
+                    $merchantProduct = $merchantProducts[$productData['product_id']];
+
+                    if (
+                        !$merchantProduct
+                        || $merchantProduct->stock < $merchantQuantities[$productData['product_id']]
+                    ) {
+                        throw ValidationException::withMessages([
+                            'stock' => ["Insufficient stock for product ID: " . $productData['product_id']]
+                        ]);
+                    }
+                }
+
+                $taxTotal = $subTotal * 0.1;
+                $grandTotal = $subTotal + $taxTotal;
+
+                $transaction = $this->transactionRepository->create([
+                    'name' => $data['name'],
+                    'phone' => $data['phone'],
+                    'merchant_id' => $data['merchant_id'],
+                    'sub_total' => $subTotal,
+                    'tax_total' => $taxTotal,
+                    'grand_total' => $grandTotal,
+                    'idempotency_key' => $idempotencyKey,
+                ]);
+
+                $this->recipeStockService->deductForTransaction(
+                    $transaction,
+                    $products,
                     $data['merchant_id'],
-                    $productData['product_id'],
-                    $newStock
+                    $data['warehouse_id'] ?? null
                 );
 
+                foreach ($merchantQuantities as $productId => $quantity) {
+                    $merchantProduct = $merchantProducts[$productId];
+
+                    $this->merchantProductRepository->updateStock(
+                        $data['merchant_id'],
+                        $productId,
+                        $merchantProduct->stock - $quantity
+                    );
+                }
+
+                $this->transactionRepository->createTransactionProducts($transaction->id, $products);
+
+                return $transaction->fresh();
+            });
+        } catch (QueryException $e) {
+            if ($idempotencyKey) {
+                $existing = $this->transactionRepository->findByIdempotencyKey($idempotencyKey);
+
+                if ($existing) {
+                    return $existing;
+                }
             }
 
-            $taxTotal = $subTotal * 0.1;
-            $grandTotal = $subTotal + $taxTotal;
-
-            $transaction = $this->transactionRepository->create([
-                'name' => $data['name'],
-                'phone' => $data['phone'],
-                'merchant_id' => $data['merchant_id'],
-                'sub_total' => $subTotal,
-                'tax_total' => $taxTotal,
-                'grand_total' => $grandTotal,
-            ]);
-
-            $this->transactionRepository->createTransactionProducts($transaction->id, $products);
-
-            return $transaction->fresh();
-
-        });
-
+            throw $e;
+        }
     }
-
-
 }

@@ -11,11 +11,36 @@ class StockOut extends Model
     /** @use HasFactory<\Database\Factories\StockOutFactory> */
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['merchant_id', 'product_id', 'quantity', 'reason', 'user_id'];
+    protected $fillable = [
+        'merchant_id',
+        'warehouse_id',
+        'transaction_id',
+        'product_id',
+        'quantity',
+        'reason',
+        'user_id',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'quantity' => 'float',
+        ];
+    }
 
     public function merchant()
     {
         return $this->belongsTo(Merchant::class);
+    }
+
+    public function warehouse()
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
+
+    public function transaction()
+    {
+        return $this->belongsTo(Transaction::class);
     }
 
     public function product()

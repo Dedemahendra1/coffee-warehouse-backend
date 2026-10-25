@@ -14,6 +14,13 @@ class WarehouseProduct extends Model
 
     protected $fillable = ['warehouse_id', 'product_id', 'stock'];
 
+    protected function casts(): array
+    {
+        return [
+            'stock' => 'float',
+        ];
+    }
+
     public function warehouse()
     {
         return $this->belongsTo(Warehouse::class);

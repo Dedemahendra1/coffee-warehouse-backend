@@ -89,6 +89,8 @@ Route::middleware(['auth:sanctum', 'role:manager|keeper'])->group(function () {
     // Lihat produk & stok gudang
     Route::get('warehouses/{warehouse}/products', [WarehouseProductController::class, 'show']);
 
+    Route::get('sellable-menus', [RecipeController::class, 'menus']);
+
     Route::get('transactions/{transaction}', [TransactionController::class, 'show']);
 
     Route::get('/my-merchant/transactions', [TransactionController::class, 'getTransactionsByMerchant']);

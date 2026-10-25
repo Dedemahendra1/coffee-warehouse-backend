@@ -25,6 +25,8 @@ class TransactionRequest extends FormRequest
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'merchant_id' => 'required|exists:merchants,id',
+            'warehouse_id' => 'nullable|exists:warehouses,id',
+            'idempotency_key' => 'nullable|string|max:64',
             'products' => 'required|array|min:1', // Products must be an array
             'products.*.product_id' => 'required|exists:products,id',
             'products.*.quantity' => 'required|integer|min:1',

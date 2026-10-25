@@ -28,6 +28,11 @@ class TransactionRepository
         return Transaction::create($data);
     }
 
+    public function findByIdempotencyKey(string $idempotencyKey)
+    {
+        return Transaction::where('idempotency_key', $idempotencyKey)->first();
+    }
+
     public function update(int $id, array $data)
     {
         $transaction = Transaction::findOrFail($id);

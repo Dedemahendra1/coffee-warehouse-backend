@@ -24,6 +24,11 @@ class RecipeController extends Controller
         return response()->json(RecipeResource::collection($recipes));
     }
 
+    public function menus()
+    {
+        return response()->json($this->recipeService->getMenus());
+    }
+
     public function show(int $id)
     {
         try {

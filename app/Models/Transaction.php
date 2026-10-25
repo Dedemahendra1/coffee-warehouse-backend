@@ -12,7 +12,17 @@ class Transaction extends Model
     /** @use HasFactory<\Database\Factories\TransactionFactory> */
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'phone', 'sub_total', 'tax_total', 'grand_total', 'merchant_id'];
+    protected $fillable = [
+        'name',
+        'phone',
+        'sub_total',
+        'tax_total',
+        'grand_total',
+        'merchant_id',
+        'idempotency_key',
+    ];
+
+    protected $hidden = ['idempotency_key'];
 
     public function merchant()
     {

@@ -9,6 +9,7 @@ class StockOutRepository
     public function getAll()
     {
         return StockOut::with(['merchant', 'product.category', 'user'])
+            ->whereNull('warehouse_id')
             ->latest()
             ->paginate(10);
     }
@@ -17,6 +18,7 @@ class StockOutRepository
     {
         return StockOut::with(['product.category', 'user'])
             ->where('merchant_id', $merchantId)
+            ->whereNull('warehouse_id')
             ->latest()
             ->paginate(10);
     }

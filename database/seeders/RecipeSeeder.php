@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Recipe;
+use App\Models\Warehouse;
+use App\Models\WarehouseProduct;
 use App\Support\UnitConverter;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -15,29 +17,32 @@ class RecipeSeeder extends Seeder
 {
     /**
      * Bahan baku tambahan yang belum tersedia di master produk.
-     * Tidak ada stok yang dibuat agar stok gudang yang sudah ada tidak berubah.
+     * Stok awal hanya dibuat bila baris inventory belum ada.
      */
     private const NEW_INGREDIENTS = [
         [
-            'name'     => 'Mineral Water',
-            'category' => 'Beverage Supplies',
-            'unit'     => 'ml',
-            'price'    => 100,
-            'about'    => 'Air mineral untuk espresso-based drink dan teh.',
+            'name'          => 'Mineral Water',
+            'category'      => 'Beverage Supplies',
+            'unit'          => 'ml',
+            'price'         => 100,
+            'initial_stock' => 20000,
+            'about'         => 'Air mineral untuk espresso-based drink dan teh.',
         ],
         [
-            'name'     => 'Ice Cube',
-            'category' => 'Beverage Supplies',
-            'unit'     => 'gram',
-            'price'    => 50,
-            'about'    => 'Es batu untuk minuman dingin.',
+            'name'          => 'Ice Cube',
+            'category'      => 'Beverage Supplies',
+            'unit'          => 'gram',
+            'price'         => 50,
+            'initial_stock' => 10000,
+            'about'         => 'Es batu untuk minuman dingin.',
         ],
         [
-            'name'     => 'Cane Sugar',
-            'category' => 'Sweetener',
-            'unit'     => 'gram',
-            'price'    => 25,
-            'about'    => 'Gula pasir untuk pemanis minuman.',
+            'name'          => 'Cane Sugar',
+            'category'      => 'Sweetener',
+            'unit'          => 'gram',
+            'price'         => 25,
+            'initial_stock' => 5000,
+            'about'         => 'Gula pasir untuk pemanis minuman.',
         ],
     ];
 
@@ -240,7 +245,7 @@ class RecipeSeeder extends Seeder
             ],
         ],
         [
-            'name'    => 'Chamomile Tea',
+            'name'    => 'Chamomile Infusion',
             'price'   => 22000,
             'popular' => false,
             'about'   => 'Seduhan bunga chamomile dengan air mineral panas.',
@@ -289,7 +294,8 @@ class RecipeSeeder extends Seeder
         ];
 
         foreach (self::NEW_INGREDIENTS as $ingredient) {
-            $this->ingredient($ingredient, $categoryByName[$ingredient['category']]);
+            $product = $this->ingredient($ingredient, $categoryByName[$ingredient['category']]);
+            $this->ensureInitialStock($product, (float) $ingredient['initial_stock']);
         }
 
         $createdRecipes = 0;
@@ -320,6 +326,12 @@ class RecipeSeeder extends Seeder
                     if ($ingredient === null) {
                         throw new RuntimeException(
                             "Bahan baku '{$ingredientName}' untuk resep '{$menu['name']}' tidak ditemukan."
+                        );
+                    }
+
+                    if ($ingredient->id === $product->id) {
+                        throw new RuntimeException(
+                            "Menu '{$menu['name']}' tidak boleh menggunakan dirinya sendiri sebagai bahan."
                         );
                     }
 
@@ -378,6 +390,27 @@ class RecipeSeeder extends Seeder
                 'category_id' => $category->id,
                 'is_popular'  => false,
             ]
+        );
+    }
+
+    private function ensureInitialStock(Product $product, float $stock): void
+    {
+        $warehouse = Warehouse::orderBy('id')->first();
+
+        if (!$warehouse) {
+            $this->command?->warn(
+                "Gudang belum tersedia; stok awal '{$product->name}' tidak dibuat."
+            );
+
+            return;
+        }
+
+        WarehouseProduct::firstOrCreate(
+            [
+                'warehouse_id' => $warehouse->id,
+                'product_id'   => $product->id,
+            ],
+            ['stock' => $stock]
         );
     }
 
